@@ -17,7 +17,6 @@ public class TopWordFinderTopologyPartB {
 
   public static void main(String[] args) throws Exception {
 
-
     TopologyBuilder builder = new TopologyBuilder();
 
     Config config = new Config();
@@ -27,7 +26,8 @@ public class TopWordFinderTopologyPartB {
     builder.setBolt("split", new SplitSentenceBolt(), 8)
             .shuffleGrouping("spout");
 
-    builder.setBolt("count", new WordCountBolt(), 12);
+    builder.setBolt("count", new WordCountBolt(), 12)
+      .fieldsGrouping("split", new Fields("word"));
 
 
     /*
