@@ -23,6 +23,12 @@ public class TopWordFinderTopologyPartB {
     Config config = new Config();
     config.setDebug(true);
 
+    builder.setSpout("spout", new FileReaderSpout(), 5);
+    builder.setBolt("split", new SplitSentenceBolt(), 8)
+            .shuffleGrouping("spout");
+
+    builder.setBolt("count", new WordCountBolt(), 12);
+
 
     /*
     ----------------------TODO-----------------------

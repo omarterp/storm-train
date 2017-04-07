@@ -11,11 +11,12 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 
 public class FileReaderSpout implements IRichSpout {
   private SpoutOutputCollector _collector;
   private TopologyContext context;
-
+  private BufferedReader buffReader;
 
   @Override
   public void open(Map conf, TopologyContext context,
@@ -28,12 +29,29 @@ public class FileReaderSpout implements IRichSpout {
 
     ------------------------------------------------- */
 
+    try {
+      buffReader = new BufferedReader(new FileReader("data.txt"));
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+
     this.context = context;
     this._collector = collector;
   }
 
   @Override
   public void nextTuple() {
+
+    String line = null;
+    try {
+      if(buffReader != null && (line = buffReader.readLine()) != null) {
+        _collector.emit(new Values(buffReader.readLine()));
+      } else if(buffReader != null && line == null) {
+        Utils.sleep(10000);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
      /*
     ----------------------TODO-----------------------
@@ -55,6 +73,13 @@ public class FileReaderSpout implements IRichSpout {
 
   @Override
   public void close() {
+    if(buffReader != null) {
+      try {
+        buffReader.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
    /*
     ----------------------TODO-----------------------
     Task: close the file
