@@ -5,13 +5,13 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * a bolt that finds the top n words.
  */
 public class TopNFinderBolt extends BaseBasicBolt {
-  private HashMap<String, Integer> currentTopWords = new HashMap<String, Integer>();
+  private Map<String, Integer> currentTopWords = new HashMap<>();
   private int N;
 
   private long intervalToReport = 20;
@@ -23,6 +23,10 @@ public class TopNFinderBolt extends BaseBasicBolt {
 
   @Override
   public void execute(Tuple tuple, BasicOutputCollector collector) {
+    String word = tuple.getString(0);
+    Integer count = tuple.getInteger(1);
+    if(word.trim().length() > 0)
+      currentTopWords.put(word, count);
  /*
     ----------------------TODO-----------------------
     Task: keep track of the top N words
@@ -46,6 +50,8 @@ public class TopNFinderBolt extends BaseBasicBolt {
   }
 
   public String printMap() {
+    currentTopWords = sortByValues(currentTopWords);
+
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("top-words = [ ");
     for (String word : currentTopWords.keySet()) {
@@ -57,5 +63,26 @@ public class TopNFinderBolt extends BaseBasicBolt {
     stringBuilder.append("]");
     return stringBuilder.toString();
 
+  }
+
+  private Map<String, Integer> sortByValues(Map<String, Integer> map) {
+    List<Map.Entry<String, Integer>> list = new LinkedList(map.entrySet());
+
+    Collections.sort(list, new Comparator() {
+      public int compare(Object o1, Object o2) {
+        return ((Comparable) ((Map.Entry) (o2)).getValue())
+                .compareTo(((Map.Entry) (o1)).getValue());
+      }
+    });
+
+    Map<String, Integer> sortedHashMap = new LinkedHashMap<>();
+    for(Map.Entry<String, Integer> entry: list) {
+      if(sortedHashMap.size() < this.N)
+        sortedHashMap.put(entry.getKey(), entry.getValue());
+      else
+        break;
+    }
+
+    return sortedHashMap;
   }
 }

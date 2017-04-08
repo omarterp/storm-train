@@ -21,9 +21,10 @@ public class NormalizerBolt extends BaseBasicBolt {
   @Override
   public void execute(Tuple tuple, BasicOutputCollector collector) {
     String word = tuple.getString(0);
-    for(String word: words) {
+      if(!commonWords.contains(word.toLowerCase())) {
+        collector.emit(new Values(word.toLowerCase()));
+      }
 
-    }
     /*
     ----------------------TODO-----------------------
     Task:
